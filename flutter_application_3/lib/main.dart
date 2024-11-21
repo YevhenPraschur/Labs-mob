@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'screens/Home.dart';
-import 'screens/Login.dart';
-import 'screens/Reg.dart';
-import 'screens/Profile.dart';
+import 'package:flutter_application_3/screens/Home.dart';
+import 'package:flutter_application_3/screens/Login.dart';
+import 'package:flutter_application_3/screens/Reg.dart';
+import 'package:flutter_application_3/screens/Profile.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
