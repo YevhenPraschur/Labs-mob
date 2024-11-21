@@ -35,7 +35,15 @@ class _RegisterPageState extends State<RegisterPage> {
         _password!,
         _carModel!, // Додаємо модель авто
       );
-      Navigator.pushReplacementNamed(context, '/login');
+      // Автоматичний вхід після реєстрації
+      bool isLoggedIn = await _userRepository.loginUser(_email!, _password!);
+      if (isLoggedIn) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Помилка входу. Спробуйте знову.'))
+        );
+      }
     }
   }
 
@@ -120,7 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               },
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Поле для імені
                             _buildInputField(
                               label: 'Ім\'я',

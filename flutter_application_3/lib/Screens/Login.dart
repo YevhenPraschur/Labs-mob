@@ -11,23 +11,24 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   String? _email, _password;
-  final LocalUserRepository _userRepository = LocalUserRepository();
+  final _userRepository = LocalUserRepository();
 
+  // Перевірка на правильність введених даних
   void _login() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final bool success = await _userRepository.loginUser(_email!, _password!);
-      if (success) {
+      bool isLoggedIn = await _userRepository.loginUser(_email!, _password!);
+      if (isLoggedIn) {
         Navigator.pushReplacementNamed(context, '/home');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Невірний емейл або пароль')),
+          const SnackBar(content: Text('Невірний емейл або пароль.'))
         );
       }
     }
   }
 
-  // Стандартний метод для створення полів вводу
+  // Створення полів для вводу даних
   Widget _buildInputField({
     required String label,
     bool isPassword = false,
@@ -37,12 +38,12 @@ class _LoginPageState extends State<LoginPage> {
     return SizedBox(
       width: 300,
       child: TextFormField(
-        style: const TextStyle(color: Colors.white), // Білий текст вводу
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white), // Білий текст для мітки
+          labelStyle: const TextStyle(color: Colors.white),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.1), // Легкий темний фон для поля
+          fillColor: Colors.white.withOpacity(0.1),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: Colors.white),
@@ -58,10 +59,16 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Вхід')),
+      appBar: AppBar(
+        title: const Text('Вхід'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Stack(
         children: [
-          // Фон, який покриває весь екран
+          // Фон сторінки
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -73,6 +80,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
+          // Центрований контент
           Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -82,11 +90,10 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Контейнер з напівпрозорим темним фоном для форми
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6), // Напівпрозорий темний фон
+                          color: Colors.black.withOpacity(0.6),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Column(
@@ -95,7 +102,10 @@ class _LoginPageState extends State<LoginPage> {
                             _buildInputField(
                               label: 'Емейл',
                               onSave: (value) => _email = value,
-                              validator: (value) => value == null || value.isEmpty ? 'Введіть емейл' : null,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) return 'Введіть емейл';
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 16),
 
@@ -108,22 +118,30 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 20),
 
-                            // Кнопка "Вхід"
+                            // Кнопка для логіну
                             ElevatedButton(
                               onPressed: _login,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueAccent, // Колір кнопки
                                 padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                backgroundColor: Colors.blueAccent,
                               ),
-                              child: const Text('Вхід', style: TextStyle(color: Colors.white)),
+                              child: const Text('Увійти', style: TextStyle(color: Colors.white)),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 20),
+
+                            // Кнопка для переходу на сторінку реєстрації
                             TextButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, '/register');
+                                Navigator.pushReplacementNamed(context, '/register');
                               },
-                              child: const Text('Не маєш аккаунту? Зареєструйся', style: TextStyle(color: Colors.white)),
+                              child: const Text(
+                                'Немає акаунту? Зареєструйтесь',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
                             ),
                           ],
                         ),

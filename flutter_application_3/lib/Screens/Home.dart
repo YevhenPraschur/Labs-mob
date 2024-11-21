@@ -18,6 +18,7 @@ class _HomePageState extends State<HomePage> {
     _loadUserDetails();
   }
 
+  // Loads user details from the local repository
   Future<void> _loadUserDetails() async {
     final userDetails = await _userRepository.getUserDetails();
     setState(() {
@@ -27,9 +28,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Navigate to another screen
   void _navigate(String route) => Navigator.pushNamed(context, route);
+
+  // Logs out the user, navigating to the login page
   void _logout() async {
-    await _userRepository.deleteUser();
+    // Do not delete any user data, just redirect to the login page
     Navigator.pushReplacementNamed(context, '/login');
   }
 
@@ -41,7 +45,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.black,
         actions: [
           IconButton(icon: const Icon(Icons.edit), onPressed: () => _navigate('/profile')),
-          IconButton(icon: const Icon(Icons.exit_to_app), onPressed: _logout),
+          IconButton(icon: const Icon(Icons.exit_to_app), onPressed: _logout), // Logout button with no account deletion
         ],
       ),
       body: LayoutBuilder(
@@ -92,7 +96,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Generalized table cell widget
+  // General table cell widget
   Widget _tableCell(String text) {
     return Padding(
       padding: const EdgeInsets.all(12.0),
@@ -100,7 +104,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Account info table
+  // Table for user account information
   Widget _accountInfoTable() {
     return _infoTable([
       _tableRow('Емейл', _email),
@@ -109,7 +113,7 @@ class _HomePageState extends State<HomePage> {
     ]);
   }
 
-  // Car auction table
+  // Table for car auction information
   Widget _carAuctionTable() {
     return _infoTable([
       _headerRow(),
@@ -121,7 +125,7 @@ class _HomePageState extends State<HomePage> {
     ]);
   }
 
-  // Generalized method for building a table with rows
+  // General method to create a table with rows
   Widget _infoTable(List<TableRow> rows) {
     return Container(
       width: 300,
@@ -139,14 +143,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Account info table row
+  // Table row for user account information
   TableRow _tableRow(String label, String value) {
     return TableRow(
       children: [_tableCell(label), _tableCell(value)],
     );
   }
 
-  // Auction table header row
+  // Header row for car auction
   TableRow _headerRow() {
     return TableRow(
       children: [
@@ -157,7 +161,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Auction car row
+  // Table row for each car auction item
   TableRow _carAuctionRow(String car, String series, String price) {
     return TableRow(
       children: [
