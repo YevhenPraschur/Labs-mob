@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/repos/local_repos.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,34 +11,151 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  String? _email, _password;
-  final _userRepository = LocalUserRepository();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final LocalUserRepository _userRepository = LocalUserRepository();
+  ConnectivityResult? _connectivityResult; // Використовуємо nullable для ініціалізації
+  late Stream<ConnectivityResult> _connectivityStream;
 
-  // Перевірка на правильність введених даних
-  void _login() async {
+  @override
+  void initState() {
+    super.initState();
+    _loadEmail();
+    _initializeConnectivity(); // Ініціалізація з перевіркою початкового стану
+
+    // Реактивне відстеження стану мережі
+    _connectivityStream = Connectivity().onConnectivityChanged;
+    _connectivityStream.listen((ConnectivityResult result) {
+      setState(() {
+        _connectivityResult = result;
+      });
+
+      // Логіка для реакції на стан мережі
+      if (result == ConnectivityResult.none) {
+        _showDialog(
+          'Помилка з\'єднання',
+          'Відсутнє інтернет-з\'єднання. Перевірте підключення.',
+          Colors.red,
+        );
+      } else {
+        String connectionType = result == ConnectivityResult.mobile
+            ? 'мобільний інтернет'
+            : 'Wi-Fi';
+        _showDialog(
+          'З\'єднання успішне',
+          'Встановлено з\'єднання з мережею ($connectionType).',
+          Colors.green,
+        );
+      }
+    });
+  }
+
+  /// Ініціалізація початкового стану мережі
+  Future<void> _initializeConnectivity() async {
+    try {
+      _connectivityResult = await Connectivity().checkConnectivity();
+      setState(() {}); // Оновлюємо стан інтерфейсу
+
+      // Перевіряємо початковий стан
+      if (_connectivityResult == ConnectivityResult.none) {
+        _showDialog(
+          'Помилка з\'єднання',
+          'Немає з\'єднання з інтернетом. Будь ласка, перевірте ваше з\'єднання.',
+          Colors.red,
+        );
+      } else {
+        String connectionType = _connectivityResult == ConnectivityResult.mobile
+            ? 'мобільний інтернет'
+            : 'Wi-Fi';
+        _showDialog(
+          'З\'єднання успішне',
+          'Встановлено з\'єднання з мережею ($connectionType).',
+          Colors.green,
+        );
+      }
+    } catch (e) {
+      _showDialog(
+        'Помилка',
+        'Не вдалося визначити стан мережі. Спробуйте ще раз.',
+        Colors.red,
+      );
+    }
+  }
+
+  void _loadEmail() async {
+    String? savedEmail = await _userRepository.getUserEmail();
+    if (savedEmail != null && savedEmail.isNotEmpty) {
+      _emailController.text = savedEmail;
+    }
+  }
+
+  Future<void> _login() async {
+    // Актуальна перевірка перед логіном
+    ConnectivityResult currentResult = await Connectivity().checkConnectivity();
+
+    if (currentResult == ConnectivityResult.none) {
+      _showDialog(
+        'Помилка з\'єднання',
+        'Немає з\'єднання з інтернетом. Будь ласка, перевірте ваше з\'єднання.',
+        Colors.red,
+      );
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      bool isLoggedIn = await _userRepository.loginUser(_email!, _password!);
-      if (isLoggedIn) {
+      final email = _emailController.text;
+      final password = _passwordController.text;
+
+      final bool success = await _userRepository.loginUser(email, password);
+
+      if (success) {
+        _showSnackBar('Ви успішно увійшли!', Colors.green);
         Navigator.pushReplacementNamed(context, '/home');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Невірний емейл або пароль.'))
-        );
+        _showSnackBar('Невірний емейл або пароль.', Colors.red);
       }
     }
   }
 
-  // Створення полів для вводу даних
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: TextStyle(color: color)),
+        backgroundColor: Colors.black,
+      ),
+    );
+  }
+
+  void _showDialog(String title, String message, Color color) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title, style: TextStyle(color: color)),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('ОК'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildInputField({
     required String label,
     bool isPassword = false,
-    required void Function(String?) onSave,
+    required TextEditingController controller,
     required String? Function(String?) validator,
   }) {
     return SizedBox(
       width: 300,
       child: TextFormField(
+        controller: controller,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
@@ -50,7 +168,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         obscureText: isPassword,
-        onSaved: onSave,
         validator: validator,
       ),
     );
@@ -59,16 +176,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Вхід'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Вхід')),
       body: Stack(
         children: [
-          // Фон сторінки
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -80,7 +190,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-          // Центрований контент
           Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -98,49 +207,40 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: Column(
                           children: [
-                            // Поле для емейлу
                             _buildInputField(
                               label: 'Емейл',
-                              onSave: (value) => _email = value,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) return 'Введіть емейл';
-                                return null;
-                              },
+                              controller: _emailController,
+                              validator: (value) =>
+                                  value == null || value.isEmpty ? 'Введіть емейл' : null,
                             ),
                             const SizedBox(height: 16),
-
-                            // Поле для паролю
                             _buildInputField(
                               label: 'Пароль',
                               isPassword: true,
-                              onSave: (value) => _password = value,
-                              validator: (value) => value == null || value.isEmpty ? 'Введіть пароль' : null,
+                              controller: _passwordController,
+                              validator: (value) =>
+                                  value == null || value.isEmpty ? 'Введіть пароль' : null,
                             ),
                             const SizedBox(height: 20),
-
-                            // Кнопка для логіну
                             ElevatedButton(
                               onPressed: _login,
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                                 backgroundColor: Colors.blueAccent,
+                                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
                               ),
-                              child: const Text('Увійти', style: TextStyle(color: Colors.white)),
+                              child: const Text('Вхід', style: TextStyle(color: Colors.white)),
                             ),
-                            const SizedBox(height: 20),
-
-                            // Кнопка для переходу на сторінку реєстрації
+                            const SizedBox(height: 10),
                             TextButton(
                               onPressed: () {
-                                Navigator.pushReplacementNamed(context, '/register');
+                                Navigator.pushNamed(context, '/register');
                               },
                               child: const Text(
-                                'Немає акаунту? Зареєструйтесь',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
+                                'Не маєш аккаунту? Зареєструйся',
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ],

@@ -13,41 +13,37 @@ class _RegisterPageState extends State<RegisterPage> {
   String? _email, _username, _password, _carModel;
   final _userRepository = LocalUserRepository();
 
-  // Регулярний вираз для перевірки емейлу
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     return emailRegex.hasMatch(email);
   }
 
-  // Перевірка, чи ім'я не містить цифр
   bool _isValidUsername(String username) {
-    final usernameRegex = RegExp(r'^[a-zA-Z]+$'); // тільки літери
+    final usernameRegex = RegExp(r'^[a-zA-Z]+$'); 
     return usernameRegex.hasMatch(username);
   }
 
-  // Оновлений метод реєстрації
-  void _register() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      await _userRepository.registerUser(
-        _email!, 
-        _username!, 
-        _password!,
-        _carModel!, // Додаємо модель авто
+void _register() async {
+  if (_formKey.currentState!.validate()) {
+    _formKey.currentState!.save();
+    await _userRepository.registerUser(
+      _email!,
+      _username!,
+      _password!,
+      _carModel!,
+    );
+    await _userRepository.setUserLoggedIn(true);  
+    bool isLoggedIn = await _userRepository.loginUser(_email!, _password!);
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Помилка входу. Спробуйте знову.')),
       );
-      // Автоматичний вхід після реєстрації
-      bool isLoggedIn = await _userRepository.loginUser(_email!, _password!);
-      if (isLoggedIn) {
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Помилка входу. Спробуйте знову.'))
-        );
-      }
     }
   }
+}
 
-  // Стандартний метод для створення полів вводу
   Widget _buildInputField({
     required String label,
     bool isPassword = false,
@@ -87,7 +83,6 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       body: Stack(
         children: [
-          // Фон сторінки
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -99,7 +94,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
-          // Центрований контент
           Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -117,7 +111,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         child: Column(
                           children: [
-                            // Поле для емейлу
                             _buildInputField(
                               label: 'Емейл',
                               onSave: (value) => _email = value,
@@ -128,8 +121,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               },
                             ),
                             const SizedBox(height: 16),
-
-                            // Поле для імені
                             _buildInputField(
                               label: 'Ім\'я',
                               onSave: (value) => _username = value,
@@ -141,7 +132,6 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Поле для паролю
                             _buildInputField(
                               label: 'Пароль',
                               isPassword: true,
@@ -150,7 +140,6 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Поле для авто
                             _buildInputField(
                               label: 'На якому авто ви їздите?',
                               onSave: (value) => _carModel = value,
@@ -158,7 +147,6 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             const SizedBox(height: 20),
 
-                            // Кнопка для реєстрації
                             ElevatedButton(
                               onPressed: _register,
                               style: ElevatedButton.styleFrom(

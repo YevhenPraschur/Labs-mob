@@ -22,19 +22,16 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {});
   }
 
-  // Перевірка правильності емейлу
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     return emailRegex.hasMatch(email);
   }
 
-  // Перевірка на відсутність цифр в імені
   bool _isValidUsername(String username) {
     final usernameRegex = RegExp(r'^[a-zA-Z]+$');
     return usernameRegex.hasMatch(username);
   }
 
-  // Оновлений метод для збереження змін
   void _saveProfileChanges() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -51,7 +48,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Створення загальної функції для полів вводу
   Widget _buildInputField({
     required String label,
     bool isPassword = false,
@@ -115,7 +111,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       Text('Емейл: $_userEmail', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
                       const SizedBox(height: 20),
-                      // Поле для нового емейлу
                       _buildInputField(
                         label: 'Новий емейл',
                         initialValue: _userEmail,
@@ -127,7 +122,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      // Поле для нового імені
                       _buildInputField(
                         label: 'Нове ім\'я',
                         onSave: (value) => _newUsername = value,
@@ -138,7 +132,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      // Поле для нового паролю
                       _buildInputField(
                         label: 'Новий пароль',
                         isPassword: true,
@@ -146,7 +139,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         validator: (value) => value == null || value.isEmpty ? 'Введіть пароль' : null,
                       ),
                       const SizedBox(height: 20),
-                      // Кнопка збереження змін
                       ElevatedButton(
                         onPressed: _saveProfileChanges,
                         style: ElevatedButton.styleFrom(

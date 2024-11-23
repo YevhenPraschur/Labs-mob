@@ -18,7 +18,6 @@ class _HomePageState extends State<HomePage> {
     _loadUserDetails();
   }
 
-  // Loads user details from the local repository
   Future<void> _loadUserDetails() async {
     final userDetails = await _userRepository.getUserDetails();
     setState(() {
@@ -28,13 +27,36 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Navigate to another screen
   void _navigate(String route) => Navigator.pushNamed(context, route);
 
-  // Logs out the user, navigating to the login page
-  void _logout() async {
-    // Do not delete any user data, just redirect to the login page
-    Navigator.pushReplacementNamed(context, '/login');
+  void _showLogoutDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Вихід'),
+          content: const Text('Ви дійсно хочете вийти?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); 
+              },
+              child: const Text('Ні'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await _userRepository.setUserLoggedIn(false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Ви успішно вийшли з акаунта!')),
+                );
+                Navigator.pushReplacementNamed(context, '/login'); 
+              },
+              child: const Text('Так'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -45,7 +67,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.black,
         actions: [
           IconButton(icon: const Icon(Icons.edit), onPressed: () => _navigate('/profile')),
-          IconButton(icon: const Icon(Icons.exit_to_app), onPressed: _logout), // Logout button with no account deletion
+          IconButton(icon: const Icon(Icons.exit_to_app), onPressed: _showLogoutDialog), // Викликаємо діалог
         ],
       ),
       body: LayoutBuilder(
@@ -96,15 +118,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // General table cell widget
-  Widget _tableCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Text(text, style: const TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500)),
-    );
-  }
-
-  // Table for user account information
   Widget _accountInfoTable() {
     return _infoTable([
       _tableRow('Емейл', _email),
@@ -113,7 +126,6 @@ class _HomePageState extends State<HomePage> {
     ]);
   }
 
-  // Table for car auction information
   Widget _carAuctionTable() {
     return _infoTable([
       _headerRow(),
@@ -125,7 +137,6 @@ class _HomePageState extends State<HomePage> {
     ]);
   }
 
-  // General method to create a table with rows
   Widget _infoTable(List<TableRow> rows) {
     return Container(
       width: 300,
@@ -143,14 +154,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Table row for user account information
   TableRow _tableRow(String label, String value) {
     return TableRow(
       children: [_tableCell(label), _tableCell(value)],
     );
   }
 
-  // Header row for car auction
   TableRow _headerRow() {
     return TableRow(
       children: [
@@ -161,7 +170,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Table row for each car auction item
   TableRow _carAuctionRow(String car, String series, String price) {
     return TableRow(
       children: [
@@ -169,6 +177,13 @@ class _HomePageState extends State<HomePage> {
         _tableCell(series),
         _tableCell(price),
       ],
+    );
+  }
+
+  Widget _tableCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Text(text, style: const TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500)),
     );
   }
 }

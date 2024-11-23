@@ -5,25 +5,37 @@ class LocalUserRepository {
   static const String _emailKey = 'email';
   static const String _passwordKey = 'password';
   static const String _usernameKey = 'username';
-  static const String _carModelKey = 'carModel';  // New key for car model
-
+  static const String _carModelKey = 'carModel';  
+  static const String _isLoggedInKey = 'isLoggedIn';
+  
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
-
-  // Method to register a user
+  
   Future<void> registerUser(String email, String username, String password, String carModel) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_emailKey, email); // Save email
-      await prefs.setString(_usernameKey, username); // Save username
-      await prefs.setString(_carModelKey, carModel); // Save car model
+      await prefs.setString(_emailKey, email); 
+      await prefs.setString(_usernameKey, username); 
+      await prefs.setString(_carModelKey, carModel); 
 
-      await _secureStorage.write(key: _passwordKey, value: password); // Save password securely
+      await _secureStorage.write(key: _passwordKey, value: password); 
+      await prefs.setBool(_isLoggedInKey, false); 
     } catch (e) {
       print('Error registering user: $e');
     }
   }
 
-  // Method to get the user's email
+  Future<bool> isUserLoggedIn() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bool? isLoggedIn = prefs.getBool(_isLoggedInKey); 
+
+      return isLoggedIn ?? false;
+    } catch (e) {
+      print('Error checking user login status: $e');
+      return false;
+    }
+  }
+
   Future<String?> getUserEmail() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -34,23 +46,22 @@ class LocalUserRepository {
     }
   }
 
-  // Method to log in a user
-  Future<bool> loginUser(String email, String password) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? storedEmail = prefs.getString(_emailKey);
-      final String? storedPassword = await _secureStorage.read(key: _passwordKey);
+ Future<bool> loginUser(String email, String password) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final String? storedEmail = prefs.getString(_emailKey);
+    final String? storedPassword = await _secureStorage.read(key: _passwordKey);
 
-      if (storedEmail == email && storedPassword == password) {
-        return true;
-      }
-    } catch (e) {
-      print('Error during login: $e');
+    if (storedEmail == email && storedPassword == password) {
+      await setUserLoggedIn(true); 
+      return true;
     }
-    return false;
+  } catch (e) {
+    print('Error during login: $e');
   }
+  return false;
+}
 
-  // Method to get user's username
   Future<String?> getUserName() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -61,7 +72,6 @@ class LocalUserRepository {
     }
   }
 
-  // Method to get user details
   Future<Map<String, String>> getUserDetails() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -79,19 +89,7 @@ class LocalUserRepository {
       return {'email': '', 'username': '', 'carModel': ''};
     }
   }
-Future<void> saveUserDetails(String email, String username, String password, String carModel) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_emailKey, email);
-      await prefs.setString(_usernameKey, username);
-      await prefs.setString(_carModelKey, carModel);  // Зберігаємо модель автомобіля
 
-      await _secureStorage.write(key: _passwordKey, value: password); 
-    } catch (e) {
-      print('Error saving user details: $e');
-    }
-  }
-  // Method to update user's password
   Future<void> updateUserPassword(String newPassword) async {
     try {
       await _secureStorage.write(key: _passwordKey, value: newPassword); // Update password
@@ -100,27 +98,25 @@ Future<void> saveUserDetails(String email, String username, String password, Str
     }
   }
 
-  // Method to update user's email
   Future<void> updateUserEmail(String newEmail) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_emailKey, newEmail); // Update email
+      await prefs.setString(_emailKey, newEmail); 
     } catch (e) {
       print('Error updating email: $e');
     }
   }
 
-  // Method to update user's name
-  Future<void> updateUserName(String newUsername) async {
+Future<void> updateUserName(String newUsername) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_usernameKey, newUsername); // Update username
+      await prefs.setString(_usernameKey, newUsername); 
     } catch (e) {
       print('Error updating username: $e');
     }
   }
 
-  // Method to update user's car model
+  // Метод для оновлення моделі авто користувача
   Future<void> updateUserCarModel(String newCarModel) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -130,17 +126,40 @@ Future<void> saveUserDetails(String email, String username, String password, Str
     }
   }
 
-  // Method to delete user data
+  // Метод для видалення даних користувача
   Future<void> deleteUser() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_emailKey);
       await prefs.remove(_usernameKey);
       await prefs.remove(_carModelKey);  // Remove car model
+      await prefs.remove(_isLoggedInKey); // Remove login status
 
       await _secureStorage.delete(key: _passwordKey);
     } catch (e) {
       print('Error deleting user: $e');
     }
   }
+
+  // Метод для виходу: очищає дані користувача
+ Future<void> logout() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('isLoggedIn');  // Видалення статусу логіну
+    await prefs.remove('email');  // Видалення email
+    // Тут можна додати код для очищення інших даних користувача
+  } catch (e) {
+    print('Error logging out: $e');
+  }
 }
+
+
+  // Метод для встановлення статусу залогіненості
+  // Метод для встановлення статусу залогіненості
+Future<void> setUserLoggedIn(bool isLoggedIn) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isLoggedInKey, isLoggedIn); // Встановлюємо статус залогіненості
+  } catch (e) {
+    print('Error setting login status: $e');
+  }}}
