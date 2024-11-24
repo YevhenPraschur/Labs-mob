@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _loadEmail();
+    _loadPassword();
     _initializeConnectivity(); // Ініціалізація з перевіркою початкового стану
 
     // Реактивне відстеження стану мережі
@@ -38,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
           Colors.red,
         );
       } else {
-        String connectionType = result == ConnectivityResult.mobile
+        final String connectionType = result == ConnectivityResult.mobile
             ? 'мобільний інтернет'
             : 'Wi-Fi';
         _showDialog(
@@ -64,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
           Colors.red,
         );
       } else {
-        String connectionType = _connectivityResult == ConnectivityResult.mobile
+        final String connectionType = _connectivityResult == ConnectivityResult.mobile
             ? 'мобільний інтернет'
             : 'Wi-Fi';
         _showDialog(
@@ -83,15 +84,22 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _loadEmail() async {
-    String? savedEmail = await _userRepository.getUserEmail();
+    final String? savedEmail = await _userRepository.getUserEmail();
     if (savedEmail != null && savedEmail.isNotEmpty) {
       _emailController.text = savedEmail;
     }
   }
 
+  void _loadPassword() async {
+    final String? savedPassword = await _userRepository.getUserPassword();
+    if (savedPassword != null && savedPassword.isNotEmpty) {
+      _passwordController.text = savedPassword;
+    }
+  }
+
   Future<void> _login() async {
     // Актуальна перевірка перед логіном
-    ConnectivityResult currentResult = await Connectivity().checkConnectivity();
+    final ConnectivityResult currentResult = await Connectivity().checkConnectivity();
 
     if (currentResult == ConnectivityResult.none) {
       _showDialog(
@@ -148,9 +156,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildInputField({
     required String label,
-    bool isPassword = false,
-    required TextEditingController controller,
-    required String? Function(String?) validator,
+    required TextEditingController controller, required String? Function(String?) validator, bool isPassword = false,
   }) {
     return SizedBox(
       width: 300,
@@ -186,7 +192,6 @@ class _LoginPageState extends State<LoginPage> {
               image: DecorationImage(
                 image: AssetImage('assets/fon1.jpg'),
                 fit: BoxFit.cover,
-                alignment: Alignment.center,
               ),
             ),
           ),

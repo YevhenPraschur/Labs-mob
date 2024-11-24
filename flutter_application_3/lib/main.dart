@@ -10,8 +10,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Перевірка, чи є збережений користувач
-  final LocalUserRepository _userRepository = LocalUserRepository();
-  bool isLoggedIn = await _userRepository.isUserLoggedIn();
+  final LocalUserRepository userRepository = LocalUserRepository();
+  final bool isLoggedIn = await userRepository.isUserLoggedIn();
 
   // Запускаємо додаток після перевірки
   runApp(MyApp(isLoggedIn: isLoggedIn));
@@ -20,7 +20,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
 
-  const MyApp({super.key, required this.isLoggedIn});
+  const MyApp({required this.isLoggedIn, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +28,9 @@ class MyApp extends StatelessWidget {
       title: 'Flutter App',
       initialRoute: isLoggedIn ? '/home' : '/login', // Якщо користувач залогінений, переходимо на Home, якщо ні - на Login
       routes: {
-        '/login': (context) => LoginPage(),
-        '/home': (context) => HomePage(),
-        '/register': (context) => RegisterPage(),
+        '/login': (context) => const LoginPage(),
+        '/home': (context) => const HomePage(),
+        '/register': (context) => const RegisterPage(),
         '/profile': (context) => ProfilePage(),
       },
     );

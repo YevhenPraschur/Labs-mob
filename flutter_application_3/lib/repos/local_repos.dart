@@ -8,7 +8,7 @@ class LocalUserRepository {
   static const String _carModelKey = 'carModel';  
   static const String _isLoggedInKey = 'isLoggedIn';
   
-  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   
   Future<void> registerUser(String email, String username, String password, String carModel) async {
     try {
@@ -16,6 +16,7 @@ class LocalUserRepository {
       await prefs.setString(_emailKey, email); 
       await prefs.setString(_usernameKey, username); 
       await prefs.setString(_carModelKey, carModel); 
+      await prefs.setString(_passwordKey, password); 
 
       await _secureStorage.write(key: _passwordKey, value: password); 
       await prefs.setBool(_isLoggedInKey, false); 
@@ -42,6 +43,16 @@ class LocalUserRepository {
       return prefs.getString(_emailKey);
     } catch (e) {
       print('Error retrieving email: $e');
+      return null;
+    }
+  }
+
+   Future<String?> getUserPassword() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_passwordKey);
+    } catch (e) {
+      print('Error retrieving password: $e');
       return null;
     }
   }

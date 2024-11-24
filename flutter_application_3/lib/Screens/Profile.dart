@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_3/repos/local_repos.dart';
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -18,7 +20,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _loadUserEmail() async {
-    _userEmail = await _userRepository.getUserEmail() ?? "Невідомий користувач";
+    _userEmail = await _userRepository.getUserEmail() ?? 'Невідомий користувач';
     setState(() {});
   }
 
@@ -50,10 +52,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildInputField({
     required String label,
-    bool isPassword = false,
+    required void Function(String?) onSave, required String? Function(String?) validator, bool isPassword = false,
     String? initialValue,
-    required void Function(String?) onSave,
-    required String? Function(String?) validator,
   }) {
     return SizedBox(
       width: 300,
@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Емейл: $_userEmail', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
+                      Text('Емейл: $_userEmail', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
                       const SizedBox(height: 20),
                       _buildInputField(
                         label: 'Новий емейл',

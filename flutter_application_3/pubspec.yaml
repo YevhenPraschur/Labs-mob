@@ -16,6 +16,7 @@ dependencies:
   shared_preferences: ^2.0.18
   sqflite: ^2.0.0+4  
   path_provider: ^2.0.10  
+  http: ^0.13.3
 
   cupertino_icons: ^1.0.8
 
@@ -28,5 +29,16 @@ dev_dependencies:
 flutter:
   assets:
     - assets/fon1.jpg
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/static/NotoSans-Regular.ttf
+        - asset: assets/fonts/static/NotoSans-Bold.ttf
+          weight: 700
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
 
   uses-material-design: true

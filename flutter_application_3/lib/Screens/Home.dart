@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/repos/local_repos.dart';
+import 'package:http/http.dart' as http; // Додано імпорт для http
+import 'dart:convert'; // Для роботи з JSON
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,6 +13,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final LocalUserRepository _userRepository = LocalUserRepository();
   String _email = 'Не вказано', _username = 'Не вказано', _carModel = 'Не вказано';
+  List<dynamic> _cars = []; // Змінна для зберігання отриманих даних
 
   @override
   void initState() {
@@ -59,6 +62,27 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Функція для запиту до API
+  Future<void> fetchData() async {
+    final url = 'https://www.freetestapi.com/api/v1/cars?limit=3'; // Замість цього поставте ваш API
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        // Якщо запит успішний
+        setState(() {
+          final data = json.decode(response.body);
+          if (data is List) {
+            _cars = data; // Якщо це список
+          } else {
+            _cars = [];
+          }
+        });
+      } 
+    } catch (e) {
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +91,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.black,
         actions: [
           IconButton(icon: const Icon(Icons.edit), onPressed: () => _navigate('/profile')),
-          IconButton(icon: const Icon(Icons.exit_to_app), onPressed: _showLogoutDialog), // Викликаємо діалог
+          IconButton(icon: const Icon(Icons.exit_to_app), onPressed: _showLogoutDialog),
         ],
       ),
       body: LayoutBuilder(
@@ -91,7 +115,6 @@ class _HomePageState extends State<HomePage> {
         image: DecorationImage(
           image: AssetImage('assets/fon1.jpg'),
           fit: BoxFit.fill,
-          alignment: Alignment.center,
         ),
       ),
     );
@@ -111,7 +134,12 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 30),
             _accountInfoTable(),
             const SizedBox(height: 30),
-            _carAuctionTable(),
+            _cars.isNotEmpty ? _carAuctionTable() : Container(),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: fetchData, // Запит до API при натисканні
+              child: const Text('Зробити запит до API'),
+            ),
           ],
         ),
       ),
@@ -129,11 +157,16 @@ class _HomePageState extends State<HomePage> {
   Widget _carAuctionTable() {
     return _infoTable([
       _headerRow(),
-      _carAuctionRow('BMW', 'G20', '\$9,000'),
-      _carAuctionRow('BMW', 'G30', '\$6,700'),
-      _carAuctionRow('BMW', 'F25', '\$4,200'),
-      _carAuctionRow('BMW', 'F15', '\$5,300'),
-      _carAuctionRow('BMW', 'F30', '\$2,300'),
+      ..._cars.map((car) {
+        // Safe conversion of dynamic values to String
+        return _carAuctionRow(
+          (car['make'] ?? 'Невідомо').toString(),
+          (car['model'] ?? 'Невідомо').toString(),
+          (car['year']?.toString() ?? 'Невідомо'),
+          (car['price']?.toString() ?? 'Невідомо'),
+          (car['fuelType']?.toString() ?? 'Невідомо'),
+        );
+      }).toList(),
     ]);
   }
 
@@ -163,26 +196,30 @@ class _HomePageState extends State<HomePage> {
   TableRow _headerRow() {
     return TableRow(
       children: [
-        _tableCell('Авто'),
-        _tableCell('Серія'),
-        _tableCell('Вартість'),
+        _tableCell('Name'),
+        _tableCell('Model'),
+        _tableCell('Year'),
+        _tableCell('Price'),
+        _tableCell('fuelType'),
       ],
     );
   }
 
-  TableRow _carAuctionRow(String car, String series, String price) {
+  TableRow _carAuctionRow(String name, String model, String year, String price, String fuelType) {
     return TableRow(
       children: [
-        _tableCell(car),
-        _tableCell(series),
+        _tableCell(name),
+        _tableCell(model),
+        _tableCell(year),
         _tableCell(price),
+        _tableCell(fuelType),
       ],
     );
   }
 
   Widget _tableCell(String text) {
     return Padding(
-      padding: const EdgeInsets.all(12.0),
+      padding: const EdgeInsets.all(12),
       child: Text(text, style: const TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500)),
     );
   }

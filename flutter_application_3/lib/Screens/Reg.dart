@@ -33,7 +33,7 @@ void _register() async {
       _carModel!,
     );
     await _userRepository.setUserLoggedIn(true);  
-    bool isLoggedIn = await _userRepository.loginUser(_email!, _password!);
+    final bool isLoggedIn = await _userRepository.loginUser(_email!, _password!);
     if (isLoggedIn) {
       Navigator.pushReplacementNamed(context, '/home');
     } else {
@@ -46,9 +46,7 @@ void _register() async {
 
   Widget _buildInputField({
     required String label,
-    bool isPassword = false,
-    required void Function(String?) onSave,
-    required String? Function(String?) validator,
+    required void Function(String?) onSave, required String? Function(String?) validator, bool isPassword = false,
   }) {
     return SizedBox(
       width: 300,
@@ -90,7 +88,6 @@ void _register() async {
               image: DecorationImage(
                 image: AssetImage('assets/fon1.jpg'),
                 fit: BoxFit.cover,
-                alignment: Alignment.center,
               ),
             ),
           ),

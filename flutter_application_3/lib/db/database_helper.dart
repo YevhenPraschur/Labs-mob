@@ -26,7 +26,7 @@ class DatabaseHelper {
 
   // Initialize the database with the new 'isLoggedIn' column
   Future<Database> _initDatabase() async {
-    var path = await getDatabasesPath();
+    final path = await getDatabasesPath();
     return await openDatabase(
       join(path, _databaseName),
       version: _databaseVersion,
@@ -46,14 +46,14 @@ class DatabaseHelper {
 
   // Insert a new user
   Future<int> insertUser(Map<String, dynamic> user) async {
-    Database db = await database;
+    final Database db = await database;
     return await db.insert(table, user);
   }
 
   // Get a user by email
   Future<Map<String, dynamic>?> getUser(String email) async {
-    Database db = await database;
-    var result = await db.query(
+    final Database db = await database;
+    final result = await db.query(
       table,
       where: '$columnEmail = ?',
       whereArgs: [email],
@@ -63,8 +63,8 @@ class DatabaseHelper {
 
   // Get the login status of a user
   Future<bool> isUserLoggedIn() async {
-  Database db = await database;
-  var result = await db.query(
+  final Database db = await database;
+  final result = await db.query(
     table,
     where: '$columnIsLoggedIn = 1',  // Перевірка, чи користувач залогінений
   );
@@ -73,7 +73,7 @@ class DatabaseHelper {
 
   // Set the login status of a user
   Future<void> setUserLoggedIn(String email, bool isLoggedIn) async {
-    Database db = await database;
+    final Database db = await database;
     await db.update(
       table,
       {columnIsLoggedIn: isLoggedIn ? 1 : 0},
@@ -84,7 +84,7 @@ class DatabaseHelper {
 
   // Delete a user by id
   Future<int> deleteUser(int id) async {
-    Database db = await database;
+    final Database db = await database;
     return await db.delete(
       table,
       where: '$columnId = ?',
