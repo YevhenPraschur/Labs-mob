@@ -1,0 +1,31 @@
+name: flutter_application_3
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  provider: ^6.0.5
+  connectivity_plus: ^2.3.0
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^5.0.2
+  shared_preferences: ^2.0.18
+  sqflite: ^2.0.0+4  
+  path_provider: ^2.0.10  
+  http: ^0.13.6 
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  assets:
+    - assets/fon1.jpg
+
+  uses-material-design: true
