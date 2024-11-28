@@ -1,5 +1,5 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 class DatabaseHelper {
   static const _databaseName = 'user_database.db';
   static const _databaseVersion = 1;
